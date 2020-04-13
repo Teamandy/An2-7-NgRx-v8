@@ -1,10 +1,21 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import * as RouterActions from './core/@ngrx/router/router.actions';
+
+// @ngrx
+import { Store, select } from '@ngrx/store';
+import {
+  AppState,
+  selectQueryParams,
+  selectRouteParams,
+  selectRouteData,
+  selectUrl
+} from './core/@ngrx';
 
 // rxjs
-import { Subscription } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { Subscription, merge } from 'rxjs';
+import { filter, map, switchMap, tap } from 'rxjs/operators';
 
 import { MessagesService, CustomPreloadingStrategyService } from './core';
 import { SpinnerService } from './widgets';
@@ -23,8 +34,9 @@ export class AppComponent implements OnInit, OnDestroy {
     private metaService: Meta,
     private router: Router,
     public spinnerService: SpinnerService,
-    private preloadingStrategy: CustomPreloadingStrategyService
-  ) {}
+    private preloadingStrategy: CustomPreloadingStrategyService,
+    private store: Store<AppState>
+  ) { }
 
   ngOnInit() {
     // console.log(
@@ -32,6 +44,14 @@ export class AppComponent implements OnInit, OnDestroy {
     //   this.preloadingStrategy.preloadedModules
     // );
     // this.setPageTitles();
+
+    // Router Selectors Demo
+    // const url$ = this.store.pipe(select(selectUrl));
+    // const queryParams$ = this.store.pipe(select(selectQueryParams));
+    // const routeParams$ = this.store.pipe(select(selectRouteParams));
+    // const routeData$ = this.store.pipe(select(selectRouteData));
+    // const source$ = merge(url$, queryParams$, routeParams$, routeData$);
+    // source$.pipe(tap(val => console.log(val))).subscribe();
   }
 
   ngOnDestroy() {
@@ -39,7 +59,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   onDisplayMessages(): void {
-    this.router.navigate([{ outlets: { messages: ['messages'] } }]);
+    this.store.dispatch(RouterActions.go({
+      path: [{ outlets: { messages: ['messages'] } }]
+    }));
     this.messagesService.isDisplayed = true;
   }
 

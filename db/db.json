@@ -4,13 +4,16 @@
       "id": 1,
       "action": "Estimate",
       "priority": 1,
-      "estHours": 8
+      "estHours": 8,
+      "done": true
     },
     {
       "id": 2,
       "action": "Create",
       "priority": 2,
-      "estHours": 8
+      "estHours": 8,
+      "actHours": 4,
+      "done": true
     },
     {
       "id": 3,
@@ -20,15 +23,17 @@
     },
     {
       "id": 4,
-      "action": "Delete",
+      "action": "Deletion",
       "priority": 3,
-      "estHours": 2
+      "estHours": 2,
+      "done": true
     },
     {
       "id": 5,
-      "action": "Build",
+      "action": "Build it!",
       "priority": 1,
-      "estHours": 4
+      "estHours": 4,
+      "done": true
     },
     {
       "id": 6,

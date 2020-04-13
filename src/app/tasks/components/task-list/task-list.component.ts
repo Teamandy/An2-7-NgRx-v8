@@ -1,54 +1,54 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 
-import { TaskModel } from './../../models/task.model';
-import { TaskPromiseService } from './../../services';
+import { Task, TaskModel } from './../../models/task.model';
+import * as TasksActions from './../../../core/@ngrx/tasks/tasks.actions';
+
+import { Store, select } from '@ngrx/store';
+import { AppState, selectTasksData, selectTasksError } from './../../../core/@ngrx';
+import { Observable } from 'rxjs';
+import * as RouterActions from './../../../core/@ngrx/router/router.actions';
 
 @Component({
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.css']
 })
 export class TaskListComponent implements OnInit {
-  tasks: Promise<Array<TaskModel>>;
+  tasks$: Observable<ReadonlyArray<Task>>;
+  tasksError$: Observable<Error | string>;
 
   constructor(
-    private router: Router,
-    private taskPromiseService: TaskPromiseService
-  ) {}
+    private store: Store<AppState>
+  ) { }
 
   ngOnInit() {
-    this.tasks = this.taskPromiseService.getTasks();
+    this.tasks$ = this.store.pipe(select(selectTasksData));
+    this.tasksError$ = this.store.pipe(select(selectTasksError));
   }
 
   onCreateTask() {
     const link = ['/add'];
-    this.router.navigate(link);
+    this.store.dispatch(RouterActions.go({
+      path: ['/add']
+    }));
   }
 
   onCompleteTask(task: TaskModel): void {
-    this.updateTask(task).catch(err => console.log(err));
+    // task is not plain object
+    // taskToComplete is a plain object
+    const taskToComplete: Task = { ...task, done: true };
+    this.store.dispatch(TasksActions.completeTask({ task: taskToComplete }));
+
   }
 
   onEditTask(task: TaskModel): void {
     const link = ['/edit', task.id];
-    this.router.navigate(link);
+    this.store.dispatch(RouterActions.go({
+      path: link
+    }));
   }
 
   onDeleteTask(task: TaskModel) {
-    this.taskPromiseService
-      .deleteTask(task)
-      .then(() => (this.tasks = this.taskPromiseService.getTasks()))
-      .catch(err => console.log(err));
-  }
-
-  private async updateTask(task: TaskModel) {
-    const updatedTask = await this.taskPromiseService.updateTask({
-      ...task,
-      done: true
-    });
-
-    const tasks: TaskModel[] = await this.tasks;
-    const index = tasks.findIndex(t => t.id === updatedTask.id);
-    tasks[index] = { ...updatedTask };
+    const taskToDelete: Task = { ...task };
+    this.store.dispatch(TasksActions.deleteTask({ task: taskToDelete }));
   }
 }
